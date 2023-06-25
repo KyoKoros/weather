@@ -1,5 +1,3 @@
-###Codul Updatat
-
 import json
 import time
 
@@ -8,45 +6,33 @@ from json.decoder import JSONDecodeError
 from plyer import notification
 
 
-# citim de la tastatura un oras si sa ne dea temp curenta
-# starea curenta vantul si directia vantului
-# si presiunea atmosferica
-# notificare windows
-# daca ploua bine inchidem geamurile strangem rufele
-
-
-def test_func():
-    pass
-
 def get_weather(url, city, auth):
     try:
         headers = {"key": auth}
-        response = requests.get(url=url+f"?q={city}", headers=headers)
+        response = requests.get(url=url + f"?q={city}", headers=headers)
 
         if response.status_code == 200:
             response_dict = response.json()
             weather_info = response_dict["current"]
             return weather_info
-
-
         else:
             return f"Error: {response.text} with code {response.status_code}"
 
-    except requests.exceptions.RequestException as e:  # This is the correct syntax
+    except requests.exceptions.RequestException as e:
         return f"Requestion exception: {e}"
     except Exception as e:
-        return f"Exception has occured {e}"
+        return f"Exception has occurred: {e}"
 
 
 def send_alerts(config, weather: dict):
     for city, v in weather.items():
         notification_alert = []
         if v["temp_c"] > config["max_temp"]:
-            notification_alert.append(f"Temperatura este f mare: {v['temp_c']} ")
+            notification_alert.append(f"Temperatura este foarte mare: {v['temp_c']}")
         if v["wind_kph"] > config["max_wind_velocity"]:
-            notification_alert.append(f"Viteza vantului este f mare : {v['wind_kph']} ")
+            notification_alert.append(f"Viteza vantului este foarte mare: {v['wind_kph']}")
         if v["pressure_mb"] > config["max_pressure"]:
-            notification_alert.append(f"Presiunea atmosferica este f mare: {v['pressure_mb']} ")
+            notification_alert.append(f"Presiunea atmosferica este foarte mare: {v['pressure_mb']}")
 
         print(f"City: {city}\n" + "\n".join(notification_alert))
 
@@ -60,37 +46,41 @@ def send_alerts(config, weather: dict):
         time.sleep(5)
 
 
-
-
-
 def init_config():
-
     try:
         with open("config.json", "r") as f:
             config = json.loads(f.read())
         return config
     except JSONDecodeError as e:
-        print(f"Exception raised because json file is not valid: {e}")
+        print(f"Exception raised because the JSON file is not valid: {e}")
         exit()
     except FileNotFoundError as e:
-        print(f"Nu avem fisierul de config {e}")
+        print(f"Config file not found: {e}")
         exit()
     except PermissionError as e:
-        print(f"Nu ai permisiunea sa citesti fisierul de configurea. {e}")
+        print(f"Permission denied to read the config file: {e}")
+        exit()
     except Exception as e:
-        print(f"Unknown Exception {e}")
+        print(f"Unknown Exception: {e}")
         exit()
 
+
+def read_cities():
+    try:
+        with open("cities.txt", "r") as f:
+            cities = [line.strip() for line in f if line.strip()]
+        return cities
+    except FileNotFoundError:
+        print("Cities file not found. Create a 'cities.txt' file with one city per line.")
+        exit()
 
 
 if __name__ == "__main__":
     print("Started script here")
     config = init_config()
     weather = {}
-    while True:
-        city = input("Scrie orasul despre care vrei sa afli informatii. Scrie N pt exit: ")
-        if city.lower() == "n":
-            break
+    cities = read_cities()
+    for city in cities:
         weather[city] = get_weather(config["base_url"], city, auth=config["api_key"])
 
     send_alerts(config, weather)
