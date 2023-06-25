@@ -28,18 +28,27 @@ def send_alerts(config, weather: dict):
     for city, v in weather.items():
         notification_alert = []
         if v["temp_c"] > config["max_temp"]:
-            notification_alert.append(f"Temperatura este foarte mare: {v['temp_c']}")
+            notification_alert.append(f"Temperatura este foarte mare: {v['temp_c']}°C")
         if v["wind_kph"] > config["max_wind_velocity"]:
-            notification_alert.append(f"Viteza vantului este foarte mare: {v['wind_kph']}")
+            notification_alert.append(f"Viteza vântului este foarte mare: {v['wind_kph']} km/h")
         if v["pressure_mb"] > config["max_pressure"]:
-            notification_alert.append(f"Presiunea atmosferica este foarte mare: {v['pressure_mb']}")
+            notification_alert.append(f"Presiunea atmosferică este foarte mare: {v['pressure_mb']} mb")
+        if v["humidity"] > config["max_humidity"]:
+            notification_alert.append(f"Umiditatea este foarte mare: {v['humidity']}%")
+        if v["humidity"] > config["humidity_threshold"]:
+            notification_alert.append("Pragul de umiditate a fost depășit.")
 
-        print(f"City: {city}\n" + "\n".join(notification_alert))
+        print(f"City: {city}")
+        if "condition" in v and v["condition"]["text"] == "clear":
+            print("Condition: Clear")
+
+        if notification_alert:
+            print("\n".join(notification_alert))
 
         if notification_alert:
             notification.notify(
                 title=city,
-                message=" ".join(notification_alert),
+                message="\n".join(notification_alert),
                 app_icon=None,
                 timeout=10,
             )

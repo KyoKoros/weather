@@ -3,5 +3,7 @@
   "api_key": "0a299760cdec49369d0154300232206",
   "max_temp": 30,
   "max_wind_velocity": 50,
-  "max_pressure": 1000
+  "max_pressure": 1000,
+  "max_humidity": 80,
+  "humidity_threshold": 20
 }
